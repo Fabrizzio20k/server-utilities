@@ -16,20 +16,27 @@ if [[ "$SELECTED_SERVICES" == "--all" ]]; then
     SELECTED_SERVICES="Caddy Mantis SonarQube Jenkins GitLab_Runner Redis MinIO"
 fi
 
-if [[ $SELECTED_SERVICES =~ "Caddy" || $SELECTED_SERVICES =~ "MinIO" ]]; then
+NEEDS_CONFIG=false
+if [[ $SELECTED_SERVICES =~ "Caddy" ]] && grep -q "example.com" "$CADDY_FILE" 2>/dev/null; then NEEDS_CONFIG=true; fi
+if [[ $SELECTED_SERVICES =~ "MinIO" ]] && grep -q "example.com" "$CADDY_FILE" 2>/dev/null; then NEEDS_CONFIG=true; fi
+
+if [ "$NEEDS_CONFIG" = true ]; then
     echo -e -n "${YELLOW}Introduce tu dominio base (ej: sideral.com): ${NC}"
     read DOMAIN
     if [ -z "$DOMAIN" ]; then echo -e "${RED}Error: El dominio es obligatorio.${NC}"; exit 1; fi
 fi
 
-
 if [[ $SELECTED_SERVICES =~ "Caddy" ]]; then
-    echo -e -n "${YELLOW}Introduce tu correo para SSL: ${NC}"
-    read EMAIL
-    
-    sed -i "s/example.com/$DOMAIN/g" "$CADDY_FILE"
-    sed -i "s/tu-correo@example.com/$EMAIL/g" "$CADDY_FILE"
-    echo -e "${GREEN}[+] Caddyfile configurado para $DOMAIN.${NC}"
+    if grep -q "example.com" "$CADDY_FILE"; then
+        echo -e -n "${YELLOW}Introduce tu correo para SSL: ${NC}"
+        read EMAIL
+        
+        sed -i "s/example.com/$DOMAIN/g" "$CADDY_FILE"
+        sed -i "s/tu-correo@example.com/$EMAIL/g" "$CADDY_FILE"
+        echo -e "${GREEN}[+] Caddyfile configurado para $DOMAIN.${NC}"
+    else
+        echo -e "${GREEN}[+] Caddyfile ya estaba configurado previamente.${NC}"
+    fi
 fi
 
 if [[ $SELECTED_SERVICES =~ "MinIO" ]]; then
@@ -39,24 +46,35 @@ if [[ $SELECTED_SERVICES =~ "MinIO" ]]; then
         exit 1
     fi
     
-    sed -i "s/minio-console.example.com/minio.$DOMAIN/g" "$CADDY_FILE"
-    sed -i "s/minio.example.com/s3.$DOMAIN/g" "$CADDY_FILE"
-    echo -e "${GREEN}[+] Subdominios de MinIO configurados.${NC}"
+    if grep -q "minio-console.example.com" "$CADDY_FILE"; then
+        sed -i "s/minio-console.example.com/minio.$DOMAIN/g" "$CADDY_FILE"
+        sed -i "s/minio.example.com/s3.$DOMAIN/g" "$CADDY_FILE"
+        echo -e "${GREEN}[+] Subdominios de MinIO configurados.${NC}"
+    fi
 fi
 
-docker network create proxy_net 2>/dev/null
+if ! docker network ls | grep -q "proxy_net"; then
+    docker network create proxy_net >/dev/null 2>&1
+    echo -e "${GREEN}[+] Red 'proxy_net' creada.${NC}"
+fi
 
 for SERVICE in $SELECTED_SERVICES; do
     if [ -d "../docker/$SERVICE" ]; then
-        echo -e "\n${BLUE}[*] Desplegando $SERVICE...${NC}"
-        cd "../docker/$SERVICE" && docker compose up -d
+        echo -e "\n${BLUE}[*] Verificando $SERVICE...${NC}"
+        cd "../docker/$SERVICE"
+        
+        if docker compose ps --services --filter "status=running" 2>/dev/null | grep -q .; then
+            echo -e "${GREEN}[+] Los contenedores de $SERVICE ya están en ejecución.${NC}"
+        else
+            echo -e "${YELLOW}[*] Desplegando $SERVICE...${NC}"
+            docker compose up -d
+        fi
         cd ../../scripts
     else
         echo -e "${RED}[!] Error: La carpeta ../docker/$SERVICE no existe.${NC}"
     fi
 done
 
-# --- BLOQUE DE RECORDATORIOS FINALES ---
 echo -e "\n${YELLOW}====================================================${NC}"
 echo -e "${YELLOW}        ¡DESPLIEGUE COMPLETADO CON ÉXITO!        ${NC}"
 echo -e "${YELLOW}====================================================${NC}"

@@ -43,7 +43,7 @@ deploy_docker_menu() {
         2)
             echo -e "\n${YELLOW}Responde 's' para instalar o 'n' para saltar:${NC}"
             SERVICES=""
-            for s in Caddy Mantis SonarQube Jenkins GitLab_Runner Redis; do
+            for s in Caddy Mantis SonarQube Jenkins GitLab_Runner Redis MinIO; do
                 echo -e -n "¿Instalar ${BLUE}$s${NC}? (s/n): "
                 read RESP
                 if [[ "$RESP" =~ ^[sS]$ ]]; then
@@ -81,6 +81,7 @@ while true; do
         2)
             (cd scripts && bash security.sh)
             (cd scripts && bash utilities.sh)
+            (cd scripts && bash tools.sh --all)
             
             echo -e "\n${GREEN}[+] Instalación express finalizada.${NC}"
             read -n 1 -s -r -p "Presiona cualquier tecla para continuar..."
