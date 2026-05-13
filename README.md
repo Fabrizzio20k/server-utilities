@@ -49,7 +49,7 @@ Edita el archivo `scripts/firewall.conf`. Este archivo es leído por `security.s
 **Formato de `scripts/firewall.conf`:**
 
 ```conf
-IN_PORTS=("22" "80" "443" "3000" "5432")
+IN_PORTS=("22" "80" "443" "3000" "5432" "63790")
 OUT_PORTS=("any")
 ```
 

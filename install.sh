@@ -48,14 +48,14 @@ deploy_docker_menu() {
         2)
             echo -e "\n${YELLOW}Responde 's' para instalar o 'n' para saltar:${NC}"
             SERVICES=""
-            for s in Caddy Mantis SonarQube Jenkins GitLab_Runner; do
-                echo -e -n "¿Instalar ${BLUE}$s${NC}? (s/n): "
-                read RESP
-                if [[ "$RESP" == "s" || "$RESP" == "S" ]]; then
-                    SERVICES="$SERVICES $s"
-                fi
-            done
-            (cd scripts && bash tools.sh $SERVICES)
+            for s in Caddy Mantis SonarQube Jenkins GitLab_Runner Redis; do
+                    echo -e -n "¿Instalar ${BLUE}$s${NC}? (s/n): "
+                    read RESP
+                    if [[ "$RESP" == "s" || "$RESP" == "S" ]]; then
+                        SERVICES="$SERVICES $s"
+                    fi
+                done
+                (cd scripts && bash tools.sh $SERVICES)
             ;;
         *)
             return

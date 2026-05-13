@@ -18,6 +18,10 @@ monitor.example.com {
     reverse_proxy localhost:19999
 }
 
+redis.tu-dominio.com {
+    reverse_proxy redis_insight:8001
+}
+
 example.com {
     abort
 }

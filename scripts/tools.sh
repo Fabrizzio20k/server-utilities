@@ -12,7 +12,7 @@ if [ -z "$SELECTED_SERVICES" ]; then
 fi
 
 if [[ "$SELECTED_SERVICES" == "--all" ]]; then
-    SELECTED_SERVICES="Caddy Mantis SonarQube Jenkins GitLab_Runner"
+    SELECTED_SERVICES="Caddy Mantis SonarQube Jenkins GitLab_Runner Redis"
 fi
 
 if [[ $SELECTED_SERVICES =~ "Caddy" ]]; then
