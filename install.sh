@@ -44,13 +44,18 @@ deploy_docker_menu() {
             echo -e "\n${YELLOW}Responde 's' para instalar o 'n' para saltar:${NC}"
             SERVICES=""
             for s in Caddy Mantis SonarQube Jenkins GitLab_Runner Redis; do
-                    echo -e -n "¿Instalar ${BLUE}$s${NC}? (s/n): "
-                    read RESP
-                    if [[ "$RESP" == "s" || "$RESP" == "S" ]]; then
-                        SERVICES="$SERVICES $s"
-                    fi
-                done
+                echo -e -n "¿Instalar ${BLUE}$s${NC}? (s/n): "
+                read RESP
+                if [[ "$RESP" =~ ^[sS]$ ]]; then
+                    SERVICES="$SERVICES $s"
+                fi
+            done
+            
+            if [ -n "$SERVICES" ]; then
                 (cd scripts && bash tools.sh $SERVICES)
+            else
+                echo -e "${YELLOW}[!] No se seleccionó ningún servicio para instalar.${NC}"
+            fi
             ;;
         *)
             return
@@ -65,16 +70,24 @@ while true; do
         1)
             echo -e "\n${BLUE}[*] Iniciando instalación paso a paso...${NC}"
             echo -e -n "\n${YELLOW}¿Ejecutar security.sh? (s/n): ${NC}"
-            read R_SEC; [[ "$R_SEC" == "s" ]] && (cd scripts && bash security.sh)
+            read R_SEC; [[ "$R_SEC" =~ ^[sS]$ ]] && (cd scripts && bash security.sh)
+            
             echo -e -n "\n${YELLOW}¿Ejecutar utilities.sh? (s/n): ${NC}"
-            read R_UTL; [[ "$R_UTL" == "s" ]] && (cd scripts && bash utilities.sh)
+            read R_UTL; [[ "$R_UTL" =~ ^[sS]$ ]] && (cd scripts && bash utilities.sh)
+            
+            echo -e "\n${GREEN}[+] Proceso paso a paso finalizado.${NC}"
+            read -n 1 -s -r -p "Presiona cualquier tecla para continuar..."
             ;;
         2)
             (cd scripts && bash security.sh)
             (cd scripts && bash utilities.sh)
+            
+            echo -e "\n${GREEN}[+] Instalación express finalizada.${NC}"
+            read -n 1 -s -r -p "Presiona cualquier tecla para continuar..."
             ;;
         3) 
             deploy_docker_menu
+            read -n 1 -s -r -p "Presiona cualquier tecla para continuar..."
             ;;
         4) 
             echo -e "${GREEN}¡Nos vemos, Fabrizzio!${NC}"
