@@ -59,8 +59,8 @@ ufw --force reset > /dev/null 2>&1
 ufw default deny incoming > /dev/null 2>&1
 ufw default allow outgoing > /dev/null 2>&1
 
-for PORT in "${IN_PORTS[@]}"; do
-    ufw allow "$PORT"/tcp > /dev/null 2>&1
+for port in "${IN_PORTS[@]}"; do
+    ufw allow "$port"
 done
 
 ufw --force enable > /dev/null 2>&1
