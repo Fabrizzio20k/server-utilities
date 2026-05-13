@@ -1,8 +1,9 @@
 #!/bin/bash
 
-[ -f ./common.sh ] && source ./common.sh || { RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'; }
+[ -f ./common.sh ] && source ./common.sh || { RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'; }
 
 SELECTED_SERVICES=$@
+CADDY_FILE="../docker/Caddy/Caddyfile"
 
 echo -e "${GREEN}=== INICIANDO DESPLIEGUE SELECTIVO ===${NC}\n"
 
@@ -12,27 +13,70 @@ if [ -z "$SELECTED_SERVICES" ]; then
 fi
 
 if [[ "$SELECTED_SERVICES" == "--all" ]]; then
-    SELECTED_SERVICES="Caddy Mantis SonarQube Jenkins GitLab_Runner Redis"
+    SELECTED_SERVICES="Caddy Mantis SonarQube Jenkins GitLab_Runner Redis MinIO"
 fi
 
-if [[ $SELECTED_SERVICES =~ "Caddy" ]]; then
-    echo -e -n "${YELLOW}Introduce tu dominio (ej: sideral.com): ${NC}"
+if [[ $SELECTED_SERVICES =~ "Caddy" || $SELECTED_SERVICES =~ "MinIO" ]]; then
+    echo -e -n "${YELLOW}Introduce tu dominio base (ej: sideral.com): ${NC}"
     read DOMAIN
-    echo -e -n "${YELLOW}Introduce tu correo: ${NC}"
+    if [ -z "$DOMAIN" ]; then echo -e "${RED}Error: El dominio es obligatorio.${NC}"; exit 1; fi
+fi
+
+
+if [[ $SELECTED_SERVICES =~ "Caddy" ]]; then
+    echo -e -n "${YELLOW}Introduce tu correo para SSL: ${NC}"
     read EMAIL
     
-    CADDY_FILE="../docker/Caddy/Caddyfile"
     sed -i "s/example.com/$DOMAIN/g" "$CADDY_FILE"
     sed -i "s/tu-correo@example.com/$EMAIL/g" "$CADDY_FILE"
-    echo -e "${GREEN}[+] Caddyfile configurado correctamente.${NC}"
+    echo -e "${GREEN}[+] Caddyfile configurado para $DOMAIN.${NC}"
+fi
+
+if [[ $SELECTED_SERVICES =~ "MinIO" ]]; then
+    LICENSE_FILE="../docker/MinIO/minio.license"
+    if [ ! -f "$LICENSE_FILE" ]; then
+        echo -e "${RED}[!] Error: No se encontró la licencia en $LICENSE_FILE${NC}"
+        exit 1
+    fi
+    
+    sed -i "s/minio-console.example.com/minio.$DOMAIN/g" "$CADDY_FILE"
+    sed -i "s/minio.example.com/s3.$DOMAIN/g" "$CADDY_FILE"
+    echo -e "${GREEN}[+] Subdominios de MinIO configurados.${NC}"
 fi
 
 docker network create proxy_net 2>/dev/null
 
 for SERVICE in $SELECTED_SERVICES; do
-    echo -e "\n${BLUE}[*] Desplegando $SERVICE...${NC}"
-    cd "../docker/$SERVICE" && docker compose up -d
-    cd ../../scripts
+    if [ -d "../docker/$SERVICE" ]; then
+        echo -e "\n${BLUE}[*] Desplegando $SERVICE...${NC}"
+        cd "../docker/$SERVICE" && docker compose up -d
+        cd ../../scripts
+    else
+        echo -e "${RED}[!] Error: La carpeta ../docker/$SERVICE no existe.${NC}"
+    fi
 done
 
-echo -e "\n${GREEN}=== Despliegue finalizado ===${NC}"
+# --- BLOQUE DE RECORDATORIOS FINALES ---
+echo -e "\n${YELLOW}====================================================${NC}"
+echo -e "${YELLOW}        ¡DESPLIEGUE COMPLETADO CON ÉXITO!        ${NC}"
+echo -e "${YELLOW}====================================================${NC}"
+
+if [[ $SELECTED_SERVICES =~ "Mantis" ]]; then
+    echo -e "${BLUE}[!] MANTISBT:${NC}"
+    echo -e "    - Entra a la interfaz web y configura el correo (SMTP)."
+    echo -e "    - Recuerda desactivar el usuario 'admin' o cambiar su clave."
+fi
+
+if [[ $SELECTED_SERVICES =~ "MinIO" ]]; then
+    echo -e "${BLUE}[!] MINIO:${NC}"
+    echo -e "    - El script ya actualizó el dominio en el compose.yaml."
+    echo -e "    - Si las redirecciones fallan, verifica las variables"
+    echo -e "      MINIO_BROWSER_REDIRECT_URL y MINIO_SERVER_URL."
+fi
+
+if [[ $SELECTED_SERVICES =~ "Caddy" ]]; then
+    echo -e "${BLUE}[!] CADDY:${NC}"
+    echo -e "    - Verifica los certificados SSL con: 'docker logs caddy_proxy'."
+fi
+
+echo -e "${YELLOW}====================================================${NC}"

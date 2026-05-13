@@ -22,6 +22,14 @@ redis.tu-dominio.com {
     reverse_proxy redis_insight:8001
 }
 
+minio-console.example.com {
+    reverse_proxy minio_app:9001
+}
+
+minio.example.com {
+    reverse_proxy minio_app:9000
+}
+
 example.com {
     abort
 }
