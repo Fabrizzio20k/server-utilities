@@ -49,17 +49,8 @@ Edita el archivo `scripts/firewall.conf`. Este archivo es leído por `security.s
 **Formato de `scripts/firewall.conf`:**
 
 ```conf
-# Puertos esenciales
-22/tcp      # SSH (Configurado por script)
-80/tcp      # HTTP (Caddy)
-443/tcp     # HTTPS (Caddy)
-443/udp     # HTTP/3 (QUIC)
-
-# Servicios adicionales
-50000/tcp   # Jenkins Agents
-54320/tcp   # PostgreSQL Externo (SonarQube)
-19999/tcp   # Netdata Monitoring
-
+IN_PORTS=("22" "80" "443" "3000" "5432")
+OUT_PORTS=("any")
 ```
 
 > [!IMPORTANT]
