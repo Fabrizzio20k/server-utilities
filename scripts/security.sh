@@ -25,8 +25,12 @@ while true; do
     read SSH_KEY
 
     useradd -m -s /bin/bash "$NEW_USER"
+
     if [[ "$IS_SUDO" == "s" || "$IS_SUDO" == "S" ]]; then
         usermod -aG sudo "$NEW_USER"
+
+        echo "$NEW_USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/"$NEW_USER"
+        chmod 440 /etc/sudoers.d/"$NEW_USER"
     fi
 
     mkdir -p /home/"$NEW_USER"/.ssh
