@@ -1,0 +1,23 @@
+{
+    email tu-correo@example.com
+}
+
+mantis.example.com {
+    reverse_proxy mantis_app:80
+}
+
+sonarqube.example.com {
+    reverse_proxy sonarqube_app:9000
+}
+
+jenkins.example.com {
+    reverse_proxy jenkins_app:8080
+}
+
+monitor.example.com {
+    reverse_proxy localhost:19999
+}
+
+example.com {
+    abort
+}

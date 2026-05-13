@@ -1,0 +1,39 @@
+name: MantisBT
+services:
+  mysql:
+    image: mariadb:10.11
+    container_name: mantis_db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=Ut3c2026
+      - MYSQL_DATABASE=bugtracker
+      - MYSQL_USER=mantisbt
+      - MYSQL_PASSWORD=Ut3c2026
+    volumes:
+      - mantis_db_data:/var/lib/mysql
+    networks:
+      - proxy_net
+
+  mantisbt:
+    image: xlrl/mantisbt:latest
+    container_name: mantis_app
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      - MANTIS_TIMEZONE=America/Lima
+      - MANTIS_ENABLE_ADMIN=1 
+    volumes:
+      - mantis_config_data:/var/www/html/config
+      - mantis_custom_data:/var/www/html/custom
+    networks:
+      - proxy_net
+
+volumes:
+  mantis_db_data:
+  mantis_config_data:
+  mantis_custom_data:
+
+networks:
+  proxy_net:
+    external: true
