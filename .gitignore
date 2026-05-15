@@ -1,1 +1,4 @@
 firewall.conf
+db_data_v8/
+minio.license
+config/
