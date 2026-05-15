@@ -13,12 +13,12 @@ if [ -z "$SELECTED_SERVICES" ]; then
 fi
 
 if [[ "$SELECTED_SERVICES" == "--all" ]]; then
-    SELECTED_SERVICES="Caddy Mantis SonarQube Jenkins GitLab_Runner Redis MinIO"
+    SELECTED_SERVICES="Caddy MantisBT SonarQube Jenkins Gitlab-Runner Redis Minio"
 fi
 
 NEEDS_CONFIG=false
 if grep -q "example.com" "$CADDY_FILE" 2>/dev/null; then
-    if [[ $SELECTED_SERVICES =~ "Caddy" ]] || [[ $SELECTED_SERVICES =~ "MinIO" ]] || [[ $SELECTED_SERVICES =~ "Redis" ]]; then
+    if [[ $SELECTED_SERVICES =~ "Caddy" ]] || [[ $SELECTED_SERVICES =~ "Minio" ]] || [[ $SELECTED_SERVICES =~ "Redis" ]]; then
         NEEDS_CONFIG=true
     fi
 fi
@@ -29,8 +29,8 @@ if [ "$NEEDS_CONFIG" = true ]; then
     if [ -z "$DOMAIN" ]; then echo -e "${RED}Error: El dominio es obligatorio.${NC}"; exit 1; fi
 fi
 
-if [[ $SELECTED_SERVICES =~ "MinIO" ]]; then
-    LICENSE_FILE="../docker/MinIO/minio.license"
+if [[ $SELECTED_SERVICES =~ "Minio" ]]; then
+    LICENSE_FILE="../docker/Minio/minio.license"
     if [ ! -f "$LICENSE_FILE" ]; then
         echo -e "${RED}[!] Error: No se encontró la licencia en $LICENSE_FILE${NC}"
         exit 1
@@ -89,13 +89,13 @@ echo -e "\n${YELLOW}====================================================${NC}"
 echo -e "${YELLOW}        ¡DESPLIEGUE COMPLETADO CON ÉXITO!        ${NC}"
 echo -e "${YELLOW}====================================================${NC}"
 
-if [[ $SELECTED_SERVICES =~ "Mantis" ]]; then
+if [[ $SELECTED_SERVICES =~ "MantisBT" ]]; then
     echo -e "${BLUE}[!] MANTISBT:${NC}"
     echo -e "    - Entra a la interfaz web y configura el correo (SMTP)."
     echo -e "    - Recuerda desactivar el usuario 'admin' o cambiar su clave."
 fi
 
-if [[ $SELECTED_SERVICES =~ "MinIO" ]]; then
+if [[ $SELECTED_SERVICES =~ "Minio" ]]; then
     echo -e "${BLUE}[!] MINIO:${NC}"
     echo -e "    - El script ya actualizó el dominio en el compose.yaml."
     echo -e "    - Si las redirecciones fallan, verifica las variables"
