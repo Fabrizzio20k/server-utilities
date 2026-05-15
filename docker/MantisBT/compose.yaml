@@ -7,7 +7,7 @@ services:
     ports:
       - "8989:80"
     environment:
-      - MASTER_SALT = random_salt_value
+      - MASTER_SALT=random_salt_value
       - MANTIS_ENABLE_ADMIN=1
       - EMAIL_WEBMASTER=email@example.com
       - EMAIL_FROM=email@example.com

@@ -63,6 +63,19 @@ if [[ $SELECTED_SERVICES =~ "Caddy" ]]; then
     fi
 fi
 
+if [[ $SELECTED_SERVICES =~ "MantisBT" ]]; then
+    MANTIS_COMPOSE="../docker/MantisBT/compose.yaml"
+    if [ -f "$MANTIS_COMPOSE" ]; then
+        if grep -q "MASTER_SALT=" "$MANTIS_COMPOSE"; then
+            echo -e "${YELLOW}[*] Generando nuevo MASTER_SALT para MantisBT...${NC}"
+            NEW_SALT=$(cat /dev/urandom | head -c 64 | base64 | tr -d '\n')
+            
+            sed -i "s|- MASTER_SALT=.*|- MASTER_SALT=$NEW_SALT|g" "$MANTIS_COMPOSE"
+            echo -e "${GREEN}[+] MASTER_SALT inyectado en compose.yaml.${NC}"
+        fi
+    fi
+fi
+
 if ! docker network ls | grep -q "proxy_net"; then
     docker network create proxy_net >/dev/null 2>&1
     echo -e "${GREEN}[+] Red 'proxy_net' creada.${NC}"
