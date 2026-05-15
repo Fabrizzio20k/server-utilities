@@ -3,7 +3,7 @@
 }
 
 mantis.example.com {
-    reverse_proxy mantis_app:80
+    reverse_proxy mantis_web:80
 }
 
 sonarqube.example.com {
@@ -19,7 +19,7 @@ monitor.example.com {
 }
 
 redis.tu-dominio.com {
-    reverse_proxy redis_insight:8001
+    reverse_proxy redis_insight:5540
 }
 
 minio-console.example.com {
