@@ -9,7 +9,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      SONAR_JDBC_URL: jdbc:postgresql://db:5432/sonar
+      SONAR_JDBC_URL: jdbc:postgresql://sonarqube_db:5432/sonar
       SONAR_JDBC_USERNAME: sonar
       SONAR_JDBC_PASSWORD: Ut3c2026
     volumes:
