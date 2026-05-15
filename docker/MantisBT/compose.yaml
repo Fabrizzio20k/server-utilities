@@ -1,39 +1,38 @@
-name: MantisBT
+version: "3"
+
 services:
-  mysql:
-    image: mariadb:10.11
-    container_name: mantis_db
-    restart: unless-stopped
+  web:
+    image: okainov/mantisbt:latest
+    container_name: mantis_web
+    ports:
+      - "8989:80"
     environment:
-      - MYSQL_ROOT_PASSWORD=Ut3c2026
+      - MANTIS_ENABLE_ADMIN=1
+      - EMAIL_WEBMASTER=email@example.com
+      - EMAIL_FROM=email@example.com
+      - EMAIL_FROM_NAME=Mantis BT
+      - EMAIL_RETURN_PATH=email@example.com
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_USER=email@example.com
+      - SMTP_PASSWORD=tuntuntunsahur
+      - SMTP_PORT=587
+      - SMTP_MODE=tls
+      - MYSQL_HOST=db
       - MYSQL_DATABASE=bugtracker
-      - MYSQL_USER=mantisbt
-      - MYSQL_PASSWORD=Ut3c2026
-    volumes:
-      - mantis_db_data:/var/lib/mysql
-    networks:
-      - proxy_net
-
-  mantisbt:
-    image: xlrl/mantisbt:latest
-    container_name: mantis_app
-    restart: unless-stopped
+      - MYSQL_USER=mantis
+      - MYSQL_PASSWORD=mantis
     depends_on:
-      - mysql
-    environment:
-      - MANTIS_TIMEZONE=America/Lima
-      - MANTIS_ENABLE_ADMIN=1 
+      - db
+    restart: always
+
+  db:
+    image: mysql:8.4
+    container_name: mantis_db
     volumes:
-      - mantis_config_data:/var/www/html/config
-      - mantis_custom_data:/var/www/html/custom
-    networks:
-      - proxy_net
-
-volumes:
-  mantis_db_data:
-  mantis_config_data:
-  mantis_custom_data:
-
-networks:
-  proxy_net:
-    external: true
+      - ./db_data_v8:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=bugtracker
+      - MYSQL_USER=mantis
+      - MYSQL_PASSWORD=mantis
+    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
