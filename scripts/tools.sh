@@ -17,26 +17,16 @@ if [[ "$SELECTED_SERVICES" == "--all" ]]; then
 fi
 
 NEEDS_CONFIG=false
-if [[ $SELECTED_SERVICES =~ "Caddy" ]] && grep -q "example.com" "$CADDY_FILE" 2>/dev/null; then NEEDS_CONFIG=true; fi
-if [[ $SELECTED_SERVICES =~ "MinIO" ]] && grep -q "example.com" "$CADDY_FILE" 2>/dev/null; then NEEDS_CONFIG=true; fi
+if grep -q "example.com" "$CADDY_FILE" 2>/dev/null; then
+    if [[ $SELECTED_SERVICES =~ "Caddy" ]] || [[ $SELECTED_SERVICES =~ "MinIO" ]] || [[ $SELECTED_SERVICES =~ "Redis" ]]; then
+        NEEDS_CONFIG=true
+    fi
+fi
 
 if [ "$NEEDS_CONFIG" = true ]; then
     echo -e -n "${YELLOW}Introduce tu dominio base (ej: sideral.com): ${NC}"
     read DOMAIN
     if [ -z "$DOMAIN" ]; then echo -e "${RED}Error: El dominio es obligatorio.${NC}"; exit 1; fi
-fi
-
-if [[ $SELECTED_SERVICES =~ "Caddy" ]]; then
-    if grep -q "example.com" "$CADDY_FILE"; then
-        echo -e -n "${YELLOW}Introduce tu correo para SSL: ${NC}"
-        read EMAIL
-        
-        sed -i "s/example.com/$DOMAIN/g" "$CADDY_FILE"
-        sed -i "s/tu-correo@example.com/$EMAIL/g" "$CADDY_FILE"
-        echo -e "${GREEN}[+] Caddyfile configurado para $DOMAIN.${NC}"
-    else
-        echo -e "${GREEN}[+] Caddyfile ya estaba configurado previamente.${NC}"
-    fi
 fi
 
 if [[ $SELECTED_SERVICES =~ "MinIO" ]]; then
@@ -50,6 +40,26 @@ if [[ $SELECTED_SERVICES =~ "MinIO" ]]; then
         sed -i "s/minio-console.example.com/minio.$DOMAIN/g" "$CADDY_FILE"
         sed -i "s/minio.example.com/s3.$DOMAIN/g" "$CADDY_FILE"
         echo -e "${GREEN}[+] Subdominios de MinIO configurados.${NC}"
+    fi
+fi
+
+if [[ $SELECTED_SERVICES =~ "Redis" ]]; then
+    if grep -q "redis.example.com" "$CADDY_FILE"; then
+        sed -i "s/redis.example.com/redis.$DOMAIN/g" "$CADDY_FILE"
+        echo -e "${GREEN}[+] Subdominio de Redis configurado.${NC}"
+    fi
+fi
+
+if [[ $SELECTED_SERVICES =~ "Caddy" ]]; then
+    if grep -q "example.com" "$CADDY_FILE"; then
+        echo -e -n "${YELLOW}Introduce tu correo para SSL: ${NC}"
+        read EMAIL
+        
+        sed -i "s/example.com/$DOMAIN/g" "$CADDY_FILE"
+        sed -i "s/tu-correo@example.com/$EMAIL/g" "$CADDY_FILE"
+        echo -e "${GREEN}[+] Caddyfile configurado para el dominio base $DOMAIN.${NC}"
+    else
+        echo -e "${GREEN}[+] Caddyfile ya estaba configurado previamente.${NC}"
     fi
 fi
 
